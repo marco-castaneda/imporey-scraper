@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-import streamlit as st
+import streamlit as st # type: ignore
 import pandas as pd
 import openpyxl
 from io import BytesIO
@@ -9,7 +9,8 @@ from openpyxl.styles import Color, PatternFill
 import json
 import decimal
 from itertools import cycle
-
+import random
+import time
 
 def check_url(url):
     if 'https' in url:
@@ -202,28 +203,57 @@ def check_mercadolibre(url):
 
 def check_walmart(url):
     try:
-        response = requests.get(url)
-        st.write(response.status_code)
+        headers = {
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "en-US,en;q=0.9",
+            "cache-control": "max-age=0",
+            #add cookie 
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+
+        }
+        
+        response = requests.get(url, headers=headers)
+        
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, 'html.parser')
-            # Check specific indicators of availability
-            if "agotado" in response.text.lower():
-                st.write("INACTIVO")
-                return "INACTIVO", 0, 0, "-", "-"
-            else:
-                st.write("Activo")
-                list_price = soup.find('span', itemprop='name')
-                promotion_price = None
-                rating = None
-                review = None
-                return ("ACTIVO",
-                        (list_price.text if list_price is not None else "-"),
-                        (promotion_price.text
-                         if promotion_price is not None else "-"),
-                        (rating.text if rating is not None else "-"),
-                        (review.text if review is not None else "-"))
-    except requests.RequestException:
-        return "Failed to fetch the page"
+
+            list_price = None
+            promotion_price = None
+            rating = None
+            review = None
+
+            script_tag = soup.find("script", id="__NEXT_DATA__")
+            json_data = script_tag.string if script_tag is not None else None # type: ignore
+
+            try:
+                if json_data is not None:
+                    data = json.loads(json_data) # type: ignore
+                    list_price = data["props"]["pageProps"]["initialData"]["data"]["product"]["priceInfo"]["currentPrice"]["priceDisplay"]
+            except:
+                list_price = None
+
+            rating = soup.find('span', class_='f7 rating-number')
+            if rating is not None:
+                rating = rating.text.strip().strip('()')
+
+            review = soup.find('a', {'data-testid': 'item-review-section-link'})
+            if review is not None:
+                review = review.text.strip().split()[0]
+
+            time.sleep(random.uniform(1, 4)) #this is for make the request more human
+            
+            return ("ACTIVO",
+                    (list_price if list_price is not None else "-"),
+                    (promotion_price.text
+                        if promotion_price is not None else "-"),
+                    (rating if rating is not None else "-"),
+                    (review if review is not None else "-"))
+
+        else:
+            return "INACTIVO", "-", "-", "-", "-"
+    except requests.RequestException as e:
+        return "PAGINA NO ENCONTRADA", 0, 0, "-", "-"
 
 
 def check_liverpool(url):
@@ -247,7 +277,7 @@ def check_liverpool(url):
             # st.write(response.text)
             soup = BeautifulSoup(response.text, 'html.parser')
             script_tag = soup.find("script", id="__NEXT_DATA__")
-            json_object = json.loads(script_tag.text)
+            json_object = json.loads(script_tag.text) # type: ignore
             discount_price = 0
             regular_price = 0
             if json_object["query"]["data"]["mainContent"]["records"][0][
@@ -376,13 +406,13 @@ def main():
         result_row_num = 1
 
         for col_num, column_title in enumerate(keys, 1):
-            cell = result_ws.cell(row=result_row_num, column=col_num)
+            cell = result_ws.cell(row=result_row_num, column=col_num) # type: ignore
             cell.value = column_title
 
         ###
         st.write("Procesando archivo...")
         i = 0
-        for row in ws.iter_rows(min_row=2, values_only=True):
+        for row in ws.iter_rows(min_row=2, values_only=True):# type: ignore
             if row[0] is None:
                 continue
             result_row_num += 1
@@ -399,7 +429,7 @@ def main():
             promotion_price = "-"
             if marketplace == 'Amazon':
                 result, price, promotion_price, rating, reviews = check_amazon(
-                    link)
+                    link)# type: ignore
 
             elif marketplace == 'ML':
                 result, price, promotion_price, rating, reviews = check_mercadolibre(
@@ -409,7 +439,7 @@ def main():
                 result, price, promotion_price, rating, reviews = check_liverpool(
                     link)
             elif marketplace == 'Walmart':
-                result, price, promotion_price, rating, reviews = check_walmart(link)
+                result, price, promotion_price, rating, reviews = check_walmart(link)# type: ignore
             elif marketplace == 'HomeDepot':
                 result, price, promotion_price, rating, reviews = check_home_depot(
                     link)
@@ -423,12 +453,12 @@ def main():
             ]
 
             for col_num, cell_value in enumerate(row, 1):
-                cell = result_ws.cell(row=result_row_num, column=col_num)
+                cell = result_ws.cell(row=result_row_num, column=col_num)# type: ignore
                 cell.value = cell_value
             i += 1
         st.write("Terminando de procesar archivo...")
         st.write("Se procesaron ", i, " productos.")
-        for e_column in result_ws['E']:
+        for e_column in result_ws['E']:# type: ignore
             if e_column.value == "ACTIVO":
                 e_column.fill = PatternFill(start_color='38B856',
                                             end_color='38B856',
