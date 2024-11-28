@@ -429,7 +429,7 @@ def main():
             result_row_num += 1
 
             marketplace = row[0]
-            amazon_asin = row[5]
+            amazon_asin = row[3]
 
             if marketplace == 'Amazon':
                 amazon_asins.append(amazon_asin)
@@ -451,7 +451,6 @@ def main():
             product_code = row[1]
             product_name = row[2]
             link = row[3]
-            amazon_asin = row[5]
 
             result = ""
             price = "-"
@@ -459,10 +458,10 @@ def main():
             reviews = "-"
             promotion_price = "-"
             if marketplace == 'Amazon':
+                amazon_asin = link
                 asin, result, price, promotion_price, rating, reviews = next(
                     (item for item in all_asins_status if item[0] == amazon_asin),
-                    ("-", "INACTIVO", "0", "0", "-", "-"))
-                print('aaa', asin, result, price, promotion_price, rating,reviews)
+                    (amazon_asin, "INACTIVO", "0", "0", "-", "-"))
             elif marketplace == 'ML':
                 result, price, promotion_price, rating, reviews = check_mercadolibre(
                     link)
