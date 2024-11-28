@@ -19,10 +19,13 @@ def check_url(url):
             return str(url.replace('http', 'https'))
         return str('https://' + url)
 
+def chunk_list(lst, chunk_size):
+    """Splits a list into chunks of a specific size."""
+    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
 
-def check_amazon(url):
-    url = check_url(url)
 
+
+def check_amazon(ASINs):
     headers = {
         'X_API_Type': 'junglescout',
         'Accept': 'application/vnd.junglescout.v1+json',
@@ -30,14 +33,12 @@ def check_amazon(url):
         'Authorization': 'StreamlitScraper:C_FmnOlAoB8ernGdsLEU-49jZwsfZXnk6oWkR307V3c'
     }
 
-    data = {
+    data = json.dumps({
       "data": {
         "type": "keywords_by_asin_query",
         "attributes": {
-          "asins": [
-            "B0D2GJWKYL"
-          ],
-          "include_variants": True,
+          "asins": ASINs,
+          "include_variants": False,
           "min_monthly_search_volume_exact": 1,
           "max_monthly_search_volume_exact": 99999,
           "min_monthly_search_volume_broad": 1,
@@ -48,7 +49,7 @@ def check_amazon(url):
           "max_organic_product_count": 99999
         }
       }
-    }
+    }, default=str)
 
     response = requests.post(
         'https://developer.junglescout.com/api/keywords/keywords_by_asin_query?marketplace=us&sort=-monthly_search_volume_exact&page[size]=50',
@@ -56,8 +57,28 @@ def check_amazon(url):
         data=data,
     )
 
-    st.write(response.status_code)
-    st.write(response.text)
+    asins_data = []
+    if response.status_code == 200:
+        data = response.json()
+        data = data.get('data', [])
+        if len(data) > 0:
+            for asin in ASINs:
+                filtered_data = [item for item in data if item["attributes"]["primary_asin"] == asin]
+                if len(filtered_data) > 0:
+                    asins_data.append((asin, "ACTIVO", 0, 0, "-", "-"))
+                else:
+                    asins_data.append((asin, "INACTIVO", 0, 0, "-", "-"))
+
+            return asins_data
+
+    for asin in ASINs:
+        asins_data.append((asin, "INACTIVO", 0, 0, "-", "-"))
+
+    return asins_data
+
+
+    # st.write(response.status_code)
+    # st.write(response.text)
 
     # headers = {
     #     'X_API_Type': 'C_FmnOlAoB8ernGdsLEU-49jZwsfZXnk6oWkR307V3c',
@@ -222,8 +243,9 @@ def check_walmart(url):
                          if promotion_price is not None else "-"),
                         (rating.text if rating is not None else "-"),
                         (review.text if review is not None else "-"))
+        return "INACTIVO", 0, 0, "-", "-"
     except requests.RequestException:
-        return "Failed to fetch the page"
+        return "INACTIVO", 0, 0, "-", "-"
 
 
 def check_liverpool(url):
@@ -274,18 +296,6 @@ def check_liverpool(url):
         print(e)
         return "PAGINA NO ENCONTRADA", 0, 0, "-", "-"
 
-
-# def check_coppel(url):
-#     try:
-#         response = requests.get(url)
-#         if response.status_code == 404:
-#             return "Product link not available"
-#         else:
-#             return "ACTIVO"
-#     except requests.RequestException:
-#         return "Failed to fetch the page"
-
-
 def check_home_depot(url):
     try:
 
@@ -323,7 +333,7 @@ def check_home_depot(url):
                 (review if review is not None else "-"))
     except requests.RequestException:
         return "Failed to fetch the page"
-    
+
 def check_coppel(url):
     #url must be https://www.coppel.com.mx/$product
     try:
@@ -343,7 +353,7 @@ def check_coppel(url):
 
             if discounted_price is None and original_price is None:
                 return "PAGINA NO ENCONTRADA", "-", "-", "-", "-"
-                
+
             return "ACTIVO", (original_price.text if original_price is not None else "-"), (discounted_price.text if discounted_price is not None else "-"),  "-", "-"
         else:
             return "INACTIVO", "-", "-", "-", "-"
@@ -357,7 +367,7 @@ def main():
 
     dataset = st.file_uploader("Upload Excel file (.xlsx)", type=['xlsx'])
     results = {}
-    check_amazon("x")
+
     if dataset is not None:
         wb = openpyxl.load_workbook(dataset, read_only=True)
         st.info(f"File uploaded: {dataset.name}")
@@ -380,7 +390,28 @@ def main():
             cell.value = column_title
 
         ###
+        amazon_asins = []
         st.write("Procesando archivo...")
+
+        # Check the columns for any Amazon ASIN and get the data by chunks of 10 ASINs per request
+        for row in ws.iter_rows(min_row=2, values_only=True):
+            if row[0] is None:
+                continue
+            result_row_num += 1
+
+            marketplace = row[0]
+            amazon_asin = row[5]
+
+            if marketplace == 'Amazon':
+                amazon_asins.append(amazon_asin)
+
+        all_asins_status = []
+        if len(amazon_asins) > 0:
+            amazon_asins_list = chunk_list(amazon_asins, 10)
+            for asins in amazon_asins_list:
+                asins_status = check_amazon(asins)
+                all_asins_status.extend(asins_status)
+
         i = 0
         for row in ws.iter_rows(min_row=2, values_only=True):
             if row[0] is None:
@@ -391,6 +422,7 @@ def main():
             product_code = row[1]
             product_name = row[2]
             link = row[3]
+            amazon_asin = row[5]
 
             result = ""
             price = "-"
@@ -398,9 +430,10 @@ def main():
             reviews = "-"
             promotion_price = "-"
             if marketplace == 'Amazon':
-                result, price, promotion_price, rating, reviews = check_amazon(
-                    link)
-
+                asin, result, price, promotion_price, rating, reviews = next(
+                    (item for item in all_asins_status if item[0] == amazon_asin),
+                    ("-", "INACTIVO", "0", "0", "-", "-"))
+                print('aaa', asin, result, price, promotion_price, rating,reviews)
             elif marketplace == 'ML':
                 result, price, promotion_price, rating, reviews = check_mercadolibre(
                     link)
@@ -426,6 +459,7 @@ def main():
                 cell = result_ws.cell(row=result_row_num, column=col_num)
                 cell.value = cell_value
             i += 1
+
         st.write("Terminando de procesar archivo...")
         st.write("Se procesaron ", i, " productos.")
         for e_column in result_ws['E']:
@@ -444,7 +478,6 @@ def main():
                                             end_color='808080',
                                             fill_type='solid')
         with NamedTemporaryFile() as tmp:
-
             result_wb.save(tmp.name)
             data = BytesIO(tmp.read())
 
