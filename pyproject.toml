@@ -12,8 +12,6 @@ streamlit = "^1.34.0"
 pandas = "^2.2.2"
 openpyxl = "^3.0.9"
 twocaptcha = "^0.0.1"
-python-dotenv = "^1.0.1"
-firecrawl-py = "^1.6.2"
 
 [tool.pyright]
 # https://github.com/microsoft/pyright/blob/main/docs/configuration.md
