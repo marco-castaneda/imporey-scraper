@@ -229,8 +229,7 @@ def check_walmart(url):
     try:
         load_dotenv()
 
-        app = FirecrawlApp(api_key='fc-d471c3520b0746a88b78935618f75754')
-
+        app = FirecrawlApp(api_key=os.getenv('FC_API_KEY'))
 
         time.sleep(random.uniform(1, 4))
 
