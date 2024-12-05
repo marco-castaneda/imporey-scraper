@@ -11,7 +11,10 @@ import decimal
 from itertools import cycle
 import random
 import time
-
+import os
+from dotenv import load_dotenv # type: ignore
+from firecrawl import FirecrawlApp # type: ignore
+import re
 def check_url(url):
     if 'https' in url:
         return url
@@ -224,55 +227,61 @@ def check_mercadolibre(url):
 
 def check_walmart(url):
     try:
-        headers = {
-            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-            "accept-encoding": "gzip, deflate, br, zstd",
-            "accept-language": "en-US,en;q=0.9",
-            "cache-control": "max-age=0",
-            #add cookie 
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"
+        load_dotenv()
 
-        }
-        
-        response = requests.get(url, headers=headers)
-        
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.text, 'html.parser')
+        app = FirecrawlApp(api_key=os.getenv('FC_API_KEY'))
 
-            list_price = None
-            promotion_price = None
-            rating = None
-            review = None
+        time.sleep(random.uniform(1, 4))
 
-            script_tag = soup.find("script", id="__NEXT_DATA__")
-            json_data = script_tag.string if script_tag is not None else None # type: ignore
+        response = app.scrape_url(url=url, params={
+            'formats': [ 'markdown' ],
+        })
 
-            try:
-                if json_data is not None:
-                    data = json.loads(json_data) # type: ignore
-                    list_price = data["props"]["pageProps"]["initialData"]["data"]["product"]["priceInfo"]["currentPrice"]["priceDisplay"]
-            except:
-                list_price = None
+        current_price = None
+        original_price = None
+        stars = None
+        reviews = None
 
-            rating = soup.find('span', class_='f7 rating-number')
-            if rating is not None:
-                rating = rating.text.strip().strip('()')
+        current_price_match = re.search(r'MXN$(\d+\.\d{2})', response["markdown"])
+        current_price = f"${current_price_match.group(1)}" if current_price_match else None
 
-            review = soup.find('a', {'data-testid': 'item-review-section-link'})
-            if review is not None:
-                review = review.text.strip().split()[0]
+        original_price_match = re.search(r'costaba \$(\d+\.\d{2})', response["markdown"])
+        original_price = f"${original_price_match.group(1)}" if original_price_match else None
 
-            time.sleep(random.uniform(1, 4)) #this is for make the request more human
-            
-            return ("ACTIVO",
-                    (list_price if list_price is not None else "-"),
-                    (promotion_price.text
-                        if promotion_price is not None else "-"),
-                    (rating if rating is not None else "-"),
-                    (review if review is not None else "-"))
+        stars_pattern = r"\((\d+\.\d+)\)(\d+\.\d+) estrellas de (\d+) reseñas"
+        match_stars = re.search(stars_pattern, response["markdown"])
 
+        if match_stars:
+            stars = match_stars.group(1)
+            reviews = match_stars.group(3)
         else:
-            return "INACTIVO", "-", "-", "-", "-"
+            stars = None
+            reviews = None
+
+        if current_price is not None:
+            return ("ACTIVO",
+                    current_price,
+                    (original_price
+                        if original_price is not None else "-"),
+                    (stars
+                        if stars is not None else "-"),
+                    (reviews
+                        if reviews is not None else "-"))
+        else:
+            price_pattern = r"MXN\$(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)"
+            match = re.search(price_pattern, response["markdown"])
+            if match:
+                current_price = f"${match.group(1)}"
+                return ("ACTIVO",
+                    current_price,
+                    "-",
+                     (stars
+                        if stars is not None else "-"),
+                    (reviews
+                        if reviews is not None else "-"))
+            else:
+                return "INACTIVO", "-", "-", "-", "-"
+
     except requests.RequestException as e:
         return "PAGINA NO ENCONTRADA", 0, 0, "-", "-"
 
@@ -423,7 +432,7 @@ def main():
         st.write("Procesando archivo...")
 
         # Check the columns for any Amazon ASIN and get the data by chunks of 10 ASINs per request
-        for row in ws.iter_rows(min_row=2, values_only=True):
+        for row in ws.iter_rows(min_row=2, values_only=True): # type: ignore
             if row[0] is None:
                 continue
             result_row_num += 1
