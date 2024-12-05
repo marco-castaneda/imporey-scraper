@@ -13,7 +13,7 @@ import random
 import time
 import os
 from dotenv import load_dotenv # type: ignore
-from firecrawl.firecrawl import FirecrawlApp
+from firecrawl import FirecrawlApp  # type: ignore
 import re
 def check_url(url):
     if 'https' in url:
