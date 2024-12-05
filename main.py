@@ -29,157 +29,62 @@ def chunk_list(lst, chunk_size):
 
 
 
-def check_amazon(ASINs):
-    headers = {
-        'X_API_Type': 'junglescout',
-        'Accept': 'application/vnd.junglescout.v1+json',
-        'Content-Type': 'application/vnd.api+json',
-        'Authorization': 'StreamlitScraper:C_FmnOlAoB8ernGdsLEU-49jZwsfZXnk6oWkR307V3c'
-    }
+def check_amazon(url):
+    try:
+        load_dotenv()
 
-    data = json.dumps({
-      "data": {
-        "type": "keywords_by_asin_query",
-        "attributes": {
-          "asins": ASINs,
-          "include_variants": False,
-          "min_monthly_search_volume_exact": 1,
-          "max_monthly_search_volume_exact": 99999,
-          "min_monthly_search_volume_broad": 1,
-          "max_monthly_search_volume_broad": 99999,
-          "min_word_count": 1,
-          "max_word_count": 99999,
-          "min_organic_product_count": 1,
-          "max_organic_product_count": 99999
-        }
-      }
-    }, default=str)
+        if not url.startswith("https"):
+            url = "https://www.amazon.com.mx/gp/product/" + url
 
-    response = requests.post(
-        'https://developer.junglescout.com/api/keywords/keywords_by_asin_query?marketplace=us&sort=-monthly_search_volume_exact&page[size]=50',
-        headers=headers,
-        data=data,
-    )
+        current_price = None
+        original_price = None
+        rating = None
+        reviews = None
+        inactive = False
+        no_available = None
+        no_offers = None
 
-    asins_data = []
-    if response.status_code == 200:
-        data = response.json()
-        data = data.get('data', [])
-        if len(data) > 0:
-            for asin in ASINs:
-                filtered_data = [item for item in data if item["attributes"]["primary_asin"] == asin]
-                if len(filtered_data) > 0:
-                    asins_data.append((asin, "ACTIVO", 0, 0, "-", "-"))
-                else:
-                    asins_data.append((asin, "INACTIVO", 0, 0, "-", "-"))
+        app = FirecrawlApp(api_key=os.getenv('FC_API_KEY'))
 
-            return asins_data
+        time.sleep(random.uniform(1, 4))
 
-    for asin in ASINs:
-        asins_data.append((asin, "INACTIVO", 0, 0, "-", "-"))
+        response = app.scrape_url(url=url, params={
+            'formats': [ 'html' ],
+        })
 
-    return asins_data
+        soup = BeautifulSoup(response['html'], 'html.parser')
+
+        if soup.find('div', id='averageCustomerReviews') is not None:
+            rating_span = soup.find('div', id='averageCustomerReviews').find('a', class_='a-popover-trigger a-declarative').find('span', class_='a-size-base a-color-base')# type: ignore
+            rating = rating_span.text.strip() # type: ignore
+
+        if soup.find('span', id='acrCustomerReviewText') is not None:
+            reviews_span = soup.find('span', id='acrCustomerReviewText')
+            reviews = reviews_span.text.split()[0] if reviews_span else None
+        if soup.find('div', class_="a-section a-spacing-small a-text-center") is not None and soup.find('span', string="No disponible por el momento.") is not None:
+            no_available = soup.find('div', class_="a-section a-spacing-small a-text-center").find('span', string="No disponible por el momento.") # type: ignore
+
+        if soup.find('span', string="No hay ofertas destacadas disponibles") is not None:
+            no_offers = soup.find('span', string="No hay ofertas destacadas disponibles")
+
+        if no_offers or no_available:
+            return "INACTIVO", "-", "-", rating if rating is not None else "-", reviews if reviews is not None else "-"
+        else:
+            if not inactive:
+                if soup.find('span', class_='a-price aok-align-center') is not None:
+                    current_price_span = soup.find('span', class_='a-price aok-align-center').find('span', class_='a-offscreen') # type: ignore
+                    current_price = current_price_span.text.strip() if current_price_span else None
+
+                if soup.find('span', class_='a-size-small a-color-secondary aok-align-center basisPrice') is not None:
+                    original_price_span = soup.find('span', class_='a-size-small a-color-secondary aok-align-center basisPrice').find('span', class_='a-price a-text-price').find('span', class_='a-offscreen') # type: ignore
+                    original_price = original_price_span.text.strip() if original_price_span else None
+                return "ACTIVO", current_price, original_price, rating if rating is not None else "-", reviews if reviews is not None else "-"
+            else:
+                return "INACTIVO", "-", "-", rating if rating is not None else "-", reviews if reviews is not None else "-"
 
 
-    # st.write(response.status_code)
-    # st.write(response.text)
-
-    # headers = {
-    #     'X_API_Type': 'C_FmnOlAoB8ernGdsLEU-49jZwsfZXnk6oWkR307V3c',
-    #     'Accept': 'application/vnd.junglescout.v1+json',
-    #     'Content-Type': 'application/vnd.api+json',
-    # }
-
-    # data = {
-    #     "data": {
-    #         "type": "product_database_query",
-    #         "attributes": {
-    #             "product_tiers": ["oversize", "standard"],
-    #             "seller_types": ["amz", "fba", "fbm"],
-    #             "categories": ["Appliances", "Arts, Crafts & Sewing", "Automotive", "Baby", "Beauty & Personal Care", "Camera & Photo", "Cell Phones & Accessories", "Clothing, Shoes & Jewelry", "Computers & Accessories", "Electronics", "Grocery & Gourmet Food", "Health & Household", "Home & Kitchen", "Industrial & Scientific", "Kitchen & Dining", "Musical Instruments", "Office Products", "Patio, Lawn & Garden", "Pet Supplies", "Software", "Sports & Outdoors", "Tools & Home Improvement", "Toys & Games", "Video Games"],
-    #             "include_keywords": ["pasta", "spaghetti"],
-    #             "exclude_keywords": ["sushi", "ramen"],
-    #             "exclude_unavailable_products": False,
-    #             "min_price": 10,
-    #             "max_price": 6000,
-    #             "min_net": 10,
-    #             "max_net": 5700,
-    #             "min_rank": 1,
-    #             "max_rank": 10000,
-    #             "min_sales": 1,
-    #             "max_sales": 100000,
-    #             "min_revenue": 10,
-    #             "max_revenue": 1000000,
-    #             "min_reviews": 1,
-    #             "max_reviews": 1000000,
-    #             "min_rating": 1,
-    #             "max_rating": 5,
-    #             "min_weight": 0.1,
-    #             "max_weight": 200,
-    #             "min_sellers": 1,
-    #             "max_sellers": 1000000,
-    #             "min_lqs": 1,
-    #             "max_lqs": 10,
-    #             "min_updated_at": "2020-09-28",
-    #             "max_updated_at": "2020-09-29"
-    #         }
-    #     }
-    # }
-
-    # response = requests.post(
-    #     'https://developer.junglescout.com/api/product_database_query?marketplace=us&sort=name&page[size]=50',
-    #     headers=headers,
-    #     data=data,
-    # )
-
-    # user_agents = [
-    #     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
-    #     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-    #     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.82 Safari/537.36",
-    #     # Add more user agents here
-    # ]
-    # st.write(url)
-    # user_agent_cycle = cycle(user_agents)
-    # try:
-    #     headers = {
-    #         "User-Agent": next(user_agent_cycle),
-    #         "Accept":
-    #         "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-    #         "Accept-Language": "en-US,en;q=0.5",
-    #         "Accept-Encoding": "gzip, deflate, br",
-    #         "Connection": "keep-alive",
-    #         "Upgrade-Insecure-Requests": "1",
-    #         "Referer": "https://www.google.com/",
-    #         # Add more headers here
-    #     }
-    #     response = requests.get(url, headers=headers)
-    #     # st.write(response.status_code)
-    #     if "necesitamos asegurarnos de que no eres un robot" in response.text.lower(
-    #     ):
-    #         return "CAPTCHA", 0, 0, "-", "-"
-    #     if response.status_code == 200:
-    #         soup = BeautifulSoup(response.text, 'html.parser')
-    #         if soup.find(string="No disponible por el momento."):
-    #             return "INACTIVO", 0, 0, "-", "-"
-    #         else:
-    #             promotion_price = 0
-    #             promotion_span = soup.find("span", class_="savingsPercentage")
-    #             if promotion_span is not None:
-    #                 promotion_price = soup.find("span",
-    #                                             class_="a-price a-text-price")
-    #                 st.write(promotion_price)
-    #             price = soup.find("span", class_="a-price-whole")
-    #             rating = soup.find("span", "a-icon-alt")
-    #             review = soup.find("span", id="acrCustomerReviewText")
-    #             return ("ACTIVO", (price.text if price is not None else "-"),
-    #                     0, (rating.text if rating is not None else "-"),
-    #                     (review.text if review is not None else "-"))
-    #     else:
-    #         return "PAGINA NO ENCONTRADA", 0, 0, "-", "-"
-    # except requests.RequestException as e:
-    #     st.write(e)
-    #     return "Failed to fetch the page", 0, 0, "-", "-"
-
+    except requests.RequestException as e:
+        return "PAGINA NO ENCONTRADA", 0, 0, "-", "-"
 
 def check_mercadolibre(url):
     # url = check_url(url)
@@ -427,28 +332,7 @@ def main():
             cell = result_ws.cell(row=result_row_num, column=col_num) # type: ignore
             cell.value = column_title
 
-        ###
-        amazon_asins = []
         st.write("Procesando archivo...")
-
-        # Check the columns for any Amazon ASIN and get the data by chunks of 10 ASINs per request
-        for row in ws.iter_rows(min_row=2, values_only=True): # type: ignore
-            if row[0] is None:
-                continue
-            result_row_num += 1
-
-            marketplace = row[0]
-            amazon_asin = row[3]
-
-            if marketplace == 'Amazon':
-                amazon_asins.append(amazon_asin)
-
-        all_asins_status = []
-        if len(amazon_asins) > 0:
-            amazon_asins_list = chunk_list(amazon_asins, 10)
-            for asins in amazon_asins_list:
-                asins_status = check_amazon(asins)
-                all_asins_status.extend(asins_status)
 
         i = 0
         for row in ws.iter_rows(min_row=2, values_only=True):# type: ignore
@@ -467,10 +351,8 @@ def main():
             reviews = "-"
             promotion_price = "-"
             if marketplace == 'Amazon':
-                amazon_asin = link
-                asin, result, price, promotion_price, rating, reviews = next(
-                    (item for item in all_asins_status if item[0] == amazon_asin),
-                    (amazon_asin, "INACTIVO", "0", "0", "-", "-"))
+                result, price, promotion_price, rating, reviews = check_amazon(
+                    link)
             elif marketplace == 'ML':
                 result, price, promotion_price, rating, reviews = check_mercadolibre(
                     link)
