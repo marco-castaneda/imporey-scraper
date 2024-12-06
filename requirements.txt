@@ -6,3 +6,4 @@ openpyxl
 python-dotenv
 requests
 python-dotenv
+pydantic
