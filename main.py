@@ -1,20 +1,8 @@
-import requests
-from bs4 import BeautifulSoup
 import streamlit as st # type: ignore
-import pandas as pd
 import openpyxl
 from io import BytesIO
 from tempfile import NamedTemporaryFile
-from openpyxl.styles import Color, PatternFill
-import json
-import decimal
-from itertools import cycle
-import random
-import time
-import os
-from dotenv import load_dotenv # type: ignore
-from firecrawl import FirecrawlApp  # type: ignore
-import re
+from openpyxl.styles import PatternFill
 
 from scrappers import (
     check_amazon, 
@@ -27,12 +15,10 @@ from scrappers import (
 
 
 def main():
-    # mas de un archivo
-    # descarga del zip creado de facturapi
+
     st.title("Marketplace Product Status Extractor")
 
     dataset = st.file_uploader("Upload Excel file (.xlsx)", type=['xlsx'])
-    results = {}
 
     if dataset is not None:
         wb = openpyxl.load_workbook(dataset, read_only=True)
@@ -128,7 +114,6 @@ def main():
                            data=data,
                            mime='xlsx',
                            file_name="resultados.xlsx")
-
 
 if __name__ == "__main__":
     main()
