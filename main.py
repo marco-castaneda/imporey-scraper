@@ -16,59 +16,13 @@ from dotenv import load_dotenv # type: ignore
 from firecrawl import FirecrawlApp  # type: ignore
 import re
 
-from scrappers import check_amazon, check_liverpool
+from scrappers import check_amazon, check_liverpool,check_mercadolibre
 
 
 
 def chunk_list(lst, chunk_size):
     """Splits a list into chunks of a specific size."""
     return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-
-
-def check_mercadolibre(url):
-    # url = check_url(url)
-    try:
-        response = requests.get(url)
-        st.write(url)
-        # st.write(response.status_code)
-        if response.status_code == 200:
-            # st.write(response.text)
-            soup = BeautifulSoup(response.text, 'html.parser')
-            if "publicación pausada" in response.text.lower():
-                return "INACTIVO", 0, 0, "-", "-"
-            else:
-                price = soup.find("span",
-                                  class_="andes-money-amount__fraction")
-                promotion_price = soup.find(
-                    "span", class_="andes-money-amount__fraction")
-                price_arr = soup.find_all(
-                    "span", class_="andes-money-amount__fraction")
-                print(price_arr)
-                try:
-                    list_price = price_arr[0]
-                    promotion_price = None
-                    if len(price_arr) > 1:
-                        promotion_price = price_arr[1]
-                except IndexError:
-                    return "Información de precio no encontrado", 0, 0, "-", "-"
-
-                rating = soup.find("span", "ui-pdp-review__rating")
-                review = soup.find(
-                    "p",
-                    class_="ui-review-ui-review-capability__rating__label")
-                return ("ACTIVO",
-                        (list_price.text if price is not None else "-"),
-                        (promotion_price.text
-                         if promotion_price is not None else "-"),
-                        (rating.text if rating is not None else "-"),
-                        (review.text if review is not None else "-"))
-        else:
-            return "PAGINA NO ENCONTRADA", 0, 0, "-", "-"
-    except requests.RequestException as e:
-        print(e)
-        return "Error al intentar acceder a la pag", 0, 0, "-", "-"
-
 
 def check_walmart(url):
     try:
