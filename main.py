@@ -21,44 +21,10 @@ from scrappers import (
     check_liverpool,
     check_mercadolibre, 
     check_walmart,
-    check_home_depot
+    check_home_depot,
+    check_coppel
 )
 
-
-
-def chunk_list(lst, chunk_size):
-    """Splits a list into chunks of a specific size."""
-    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-
-
-
-
-def check_coppel(url):
-    #url must be https://www.coppel.com.mx/$product
-    try:
-        response = requests.get(url)
-        if response.status_code == 200:
-            discounted_price = None
-            original_price = None
-            soup = BeautifulSoup(response.text, 'html.parser')
-
-            discounted_price = soup.find('h2', {'data-testid': 'pdp_discounted_price'})
-
-            if discounted_price is not None:
-                original_price = soup.find('p', {'data-testid': 'pdp_price'})
-            else:
-                original_price = soup.find('h2', {'data-testid': 'pdp_price'})
-
-
-            if discounted_price is None and original_price is None:
-                return "PAGINA NO ENCONTRADA", "-", "-", "-", "-"
-
-            return "ACTIVO", (original_price.text if original_price is not None else "-"), (discounted_price.text if discounted_price is not None else "-"),  "-", "-"
-        else:
-            return "INACTIVO", "-", "-", "-", "-"
-    except requests.RequestException as e:
-            return "PAGINA NO ENCONTRADA", "-", "-", "-", "-"
 
 def main():
     # mas de un archivo
