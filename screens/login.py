@@ -3,8 +3,8 @@ import streamlit as st # type: ignore
 from supabase import create_client, Client
 
 
-SUPABASE_URL = os.environ['SUPABASE_URL']
-SUPABASE_KEY = os.environ['SUPABASE_KEY']
+SUPABASE_URL = st.secrets["SUPABASE_URL"]
+SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 
 if SUPABASE_URL is not None and SUPABASE_KEY is not None:
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)

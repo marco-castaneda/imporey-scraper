@@ -15,10 +15,11 @@ from scrappers import (
 from screens import logout
 
 def scrape_page():
-    st.title("Marketplace Product Status Extractor")
-
     if st.button("Cerrar Sesión"):
         logout()
+    
+    st.title("Marketplace Product Status Extractor")
+
 
     dataset = st.file_uploader("Upload Excel file (.xlsx)", type=['xlsx'])
 

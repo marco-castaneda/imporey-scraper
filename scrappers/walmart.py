@@ -5,12 +5,13 @@ import random
 import requests
 from dotenv import load_dotenv # type: ignore
 from firecrawl import FirecrawlApp  # type: ignore
+import streamlit as st # type: ignore
 
 def check_walmart(url):
     try:
         load_dotenv()
 
-        app = FirecrawlApp(api_key=os.getenv('FC_API_KEY'))
+        app = FirecrawlApp(api_key=st.secrets["FC_API_KEY"])
 
         time.sleep(random.uniform(1, 4))
 
