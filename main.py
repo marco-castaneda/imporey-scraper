@@ -44,7 +44,7 @@ def check_amazon(url):
         no_available = None
         no_offers = None
 
-        app = FirecrawlApp(api_key=os.getenv('FC_API_KEY'))
+        app = FirecrawlApp(api_key=st.secrets["FC_API_KEY"])
 
         time.sleep(random.uniform(1, 4))
 
@@ -134,7 +134,7 @@ def check_walmart(url):
     try:
         load_dotenv()
 
-        app = FirecrawlApp(api_key=os.getenv('FC_API_KEY'))
+        app = FirecrawlApp(api_key=st.secrets["FC_API_KEY"])
 
         time.sleep(random.uniform(1, 4))
 
