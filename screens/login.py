@@ -1,15 +1,11 @@
 import os
 import streamlit as st # type: ignore
-from supabase import create_client, Client
 
 
-SUPABASE_URL = st.secrets["SUPABASE_URL"]
-SUPABASE_KEY = st.secrets["SUPABASE_KEY"]
 
-if SUPABASE_URL is not None and SUPABASE_KEY is not None:
-    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-def login_page():
+
+def login_page(supabase):
     st.title("Inicio de Sesión")
     st.write("Por favor, inicia sesión para continuar.")
     
@@ -27,7 +23,7 @@ def login_page():
             st.error(f"Error de autenticación: {str(e)}")
 
 
-def logout():
+def logout(supabase):
     supabase.auth.sign_out()  # Cierra sesión en Supabase
     st.session_state["authenticated"] = False
     st.session_state["user"] = None
