@@ -8,7 +8,6 @@ import json
 
 def check_liverpool(url):
     url = check_url(url)
-    # st.write(url)
     try:
         headers = {
             "User-Agent":
@@ -19,12 +18,9 @@ def check_liverpool(url):
             "Accept-Encoding": "gzip, deflate, br",
             "Upgrade-Insecure-Requests": "1",
             "Referer": "https://www.google.com/",
-            # Add more headers here
         }
         response = requests.get(url, headers=headers)
-        # st.write(response.status_code)
         if response.status_code == 200:
-            # st.write(response.text)
             soup = BeautifulSoup(response.text, 'html.parser')
             script_tag = soup.find("script", id="__NEXT_DATA__")
             json_object = json.loads(script_tag.text) # type: ignore
@@ -51,5 +47,4 @@ def check_liverpool(url):
             return "INACTIVO", 0, 0, "-", "-"
 
     except requests.RequestException as e:
-        print(e)
         return "PAGINA NO ENCONTRADA", 0, 0, "-", "-"

@@ -36,5 +36,4 @@ def check_mercadolibre(url):
         else:
             return "PAGINA NO ENCONTRADA", 0, 0, "-", "-"
     except requests.RequestException as e:
-        print(e)
         return "Error al intentar acceder a la pag", 0, 0, "-", "-"

@@ -1,10 +1,9 @@
-import streamlit as st # type: ignore
 import openpyxl
-from io import BytesIO
-from tempfile import NamedTemporaryFile
+import streamlit as st # type: ignore
+from screens import logout
 from openpyxl.styles import PatternFill
+from data import extrac_from_db, dowload_results_file
 
-from data import extrac_from_db
 from scrappers import (
     check_amazon, 
     check_liverpool,
@@ -13,7 +12,6 @@ from scrappers import (
     check_home_depot,
     check_coppel
 )
-from screens import logout
 
 def scrape_page(supabase):
     if st.button("Cerrar Sesión"):
@@ -21,8 +19,30 @@ def scrape_page(supabase):
     
     st.title("Marketplace Product Status Extractor")
 
-    if st.button("Liverpool"):
-        extrac_from_db(marketplace="Liverpool")
+    st.header("Extrac data from database", divider="blue")
+
+    col1, col2, col3 = st.columns(3)
+    col21, col22, col23 = st.columns(3)
+    if col1.button("Amazon"):
+        extrac_from_db(marketplace="Amazon", supabase=supabase)
+
+    if col2.button("Mercado Libre"):
+        extrac_from_db(marketplace="MercadoLibre", supabase=supabase)
+
+    if col3.button("Liverpool"):
+        extrac_from_db(marketplace="Liverpool", supabase=supabase)
+
+    if col21.button("Walmart"):
+        extrac_from_db(marketplace="Walmart", supabase=supabase)
+
+    if col22.button("Home Depot"):
+        extrac_from_db(marketplace="HomeDepot", supabase=supabase)
+
+    if col23.button("Coppel"):
+        extrac_from_db(marketplace="Coppel", supabase=supabase)
+
+
+    st.header("Extrac data from excel file", divider="green")
 
     dataset = st.file_uploader("Upload Excel file (.xlsx)", type=['xlsx'])
 
@@ -116,12 +136,5 @@ def build_excel_results(dataset):
             e_column.fill = PatternFill(start_color='808080',
                                         end_color='808080',
                                         fill_type='solid')
-    with NamedTemporaryFile() as tmp:
-        result_wb.save(tmp.name)
-        data = BytesIO(tmp.read())
-
-    st.subheader("Resultados")
-    st.download_button("Descargar Archivo",
-                        data=data,
-                        mime='xlsx',
-                        file_name=f"resultados_{marketplace}.xlsx")
+    
+    dowload_results_file(marketplace=marketplace,result_wb=result_wb)
