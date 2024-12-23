@@ -43,7 +43,7 @@ def extrac_from_db(marketplace,supabase):
 
         i = 0
         
-        resp = supabase.table(str(marketplace)).select("*").execute()
+        resp = supabase.table("Products").select("*").eq("marketplace",marketplace).execute()
         
         if resp.data:
             for product in resp.data:
