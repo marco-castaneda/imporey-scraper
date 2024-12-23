@@ -1,9 +1,9 @@
 streamlit
 firecrawl-py
 beautifulsoup4
-pandas
 openpyxl
 python-dotenv
 requests
 python-dotenv
 pydantic
+supabase
