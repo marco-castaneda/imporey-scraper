@@ -21,8 +21,12 @@ def scrape_page(supabase):
 
     st.header("Extrac data from database", divider="blue")
 
+    column1 = st.columns(1)
     col1, col2, col3 = st.columns(3)
     col21, col22, col23 = st.columns(3)
+    if column1[0].button("Descargar todas las marketplaces"):
+        extrac_from_db(marketplace="All", supabase=supabase)
+
     if col1.button("Amazon"):
         extrac_from_db(marketplace="Amazon", supabase=supabase)
 

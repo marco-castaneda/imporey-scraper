@@ -64,4 +64,6 @@ def check_walmart(url):
 
     except requests.RequestException as e:
         return "PAGINA NO ENCONTRADA", 0, 0, "-", "-"
-
+    
+    except Exception as e:
+        return "PAGINA NO ENCONTRADA", 0, 0, "-", "-"
