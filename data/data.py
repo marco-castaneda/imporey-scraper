@@ -43,9 +43,11 @@ def extrac_from_db(marketplace,supabase):
 
         i = 0
         
-        resp = supabase.table("Products").select("*").eq("marketplace",marketplace).execute()
+        resp = supabase.table("Products").select("*").eq("marketplace",marketplace).eq("active",1).execute()
+        prg = st.progress(0)
         
         if resp.data:
+            total = len(resp.data)
             for product in resp.data:
                 result_row_num += 1
 
@@ -86,6 +88,7 @@ def extrac_from_db(marketplace,supabase):
                     cell = result_ws.cell(row=result_row_num, column=col_num)# type: ignore
                     cell.value = cell_value
                 i += 1
+                prg.progress(i / total,text=f"Procesando {i} producto(s) de {total}.")
 
             st.write("Terminando de procesar los datos...")
             st.write("Se procesaron ", i, " productos.")
@@ -111,5 +114,8 @@ def extrac_from_db(marketplace,supabase):
             st.warning(f"No data in table {marketplace}.")
     except Exception as e:
         st.error(f"Error to obtain products of {marketplace}: {e}")
+        if st.button("Reiniciar proceso",type="secondary"):
+            st.rerun()
+
         return []
     
