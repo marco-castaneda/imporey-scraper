@@ -73,9 +73,11 @@ def build_excel_results(dataset):
         cell.value = column_title
 
     st.write("Procesando archivo...")
+    prg = st.progress(0)
 
     i = 0
     for row in ws.iter_rows(min_row=2, values_only=True):# type: ignore
+        total = ws.max_row - 1
         if row[0] is None:
             continue
         result_row_num += 1
@@ -118,6 +120,7 @@ def build_excel_results(dataset):
             cell = result_ws.cell(row=result_row_num, column=col_num)# type: ignore
             cell.value = cell_value
         i += 1
+        prg.progress(i / total,text=f"Procesando {i} producto(s) de {total}.")
 
     st.write("Terminando de procesar archivo...")
     st.write("Se procesaron ", i, " productos.")

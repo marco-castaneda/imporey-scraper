@@ -3,13 +3,11 @@ import re
 import time
 import random
 import requests
-from dotenv import load_dotenv # type: ignore
 from firecrawl import FirecrawlApp  # type: ignore
 import streamlit as st # type: ignore
 
 def check_walmart(url):
     try:
-        load_dotenv()
 
         app = FirecrawlApp(api_key=st.secrets["FC_API_KEY"])
 

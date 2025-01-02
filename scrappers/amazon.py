@@ -4,13 +4,11 @@ import time
 import random
 import requests
 from bs4 import BeautifulSoup
-from dotenv import load_dotenv # type: ignore
 from firecrawl import FirecrawlApp  # type: ignore
 import streamlit as st # type: ignore
 
 def check_amazon(url):
     try:
-        load_dotenv()
 
         if not url.startswith("https"):
             url = "https://www.amazon.com.mx/gp/product/" + url
