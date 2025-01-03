@@ -12,7 +12,7 @@ from scrappers import (
     check_coppel
 )
 
-def dowload_results_file(marketplace,result_wb):
+def dowload_results_file(file_name,result_wb):
     with NamedTemporaryFile() as tmp:
         result_wb.save(tmp.name)
         data = BytesIO(tmp.read())
@@ -21,7 +21,7 @@ def dowload_results_file(marketplace,result_wb):
     st.download_button("Descargar Archivo",
                         data=data,
                         mime='xlsx',
-                        file_name=f"resultados_{marketplace}.xlsx")
+                        file_name=f"resultados_{file_name}.xlsx")
 
 def extrac_from_db(marketplace,supabase):
     try:
@@ -30,6 +30,7 @@ def extrac_from_db(marketplace,supabase):
 
         result_wb = openpyxl.Workbook()
         result_ws = result_wb.active
+        file_name = marketplace
 
         keys = [
             "Marketplace", "Codigo", "Descripcion", "Link", "Estatus",
@@ -42,17 +43,33 @@ def extrac_from_db(marketplace,supabase):
             cell.value = column_title
 
         i = 0
-        
-        resp = supabase.table("Products").select("*").eq("marketplace",marketplace).eq("active",1).execute()
+        all_products = []
+        if marketplace is 'All':
+            limit = 1000 # default limit for supabase requests
+            offset = 0
+            file_name = "todas_marketplaces"
+            #resp = supabase.table("Products").select("*").eq("active",1).execute()
+
+            while True:
+                resp = supabase.table("Products").select("*").eq("active", 1).range(offset, offset + limit - 1).execute()
+                all_products.extend(resp.data)
+                if len(resp.data) < limit:
+                    break
+
+                offset += limit
+        else:
+            resp = supabase.table("Products").select("*").eq("marketplace",marketplace).eq("active",1).execute()
+            all_products.extend(resp.data)
+
         prg = st.progress(0)
         
         if resp.data:
-            total = len(resp.data)
-            for product in resp.data:
+            total = len(all_products)
+            for product in all_products:
                 result_row_num += 1
-
                 product_code = product["code"]
                 product_name = product["name"]
+                marketplace = product["marketplace"]
                 link = product["link"]
                 result = ""
                 price = "-"
@@ -108,7 +125,7 @@ def extrac_from_db(marketplace,supabase):
                                                 end_color='808080',
                                                 fill_type='solid')
                     
-            dowload_results_file(marketplace=marketplace,result_wb=result_wb)
+            dowload_results_file(file_name=file_name,result_wb=result_wb)
 
         else:
             st.warning(f"No data in table {marketplace}.")
