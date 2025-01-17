@@ -2,8 +2,7 @@ import os
 from sendgrid import SendGridAPIClient # type: ignore
 
 
-def make_report(url):
-
+def make_report():
     try:
         sendgrid_client = SendGridAPIClient(api_key=os.getenv("SENDGRID_API_KEY"))
         data = {
