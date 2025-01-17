@@ -15,20 +15,10 @@ source venv/bin/activate
 2. Install streamlit
 
 ```sh
-pip3 install streamlit
+pip install streamlit bs4 openpyxl schedule firecrawl-py supabase
 ```
 
-3. Install packages
-
-```sh
-pip3 install bs4
-```
-
-```sh
-pip3 install openpyxl
-```
-
-4. Run
+3. Run
 
 ```sh
 streamlit run main.py
