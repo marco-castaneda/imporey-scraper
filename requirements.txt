@@ -7,3 +7,4 @@ requests
 pydantic
 supabase
 schedule
+sendgrid

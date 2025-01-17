@@ -5,34 +5,41 @@ import os
 import schedule  # type: ignore
 import threading
 import time
+from data import extrac_from_db, dowload_results_file
+from helpers import make_report  # type: ignore
 
-def main():
+
+def supabase_client():
     SUPABASE_URL = os.getenv("SUPABASE_URL")
     SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
     if SUPABASE_URL is not None and SUPABASE_KEY is not None:
         supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        return supabase
+    return None
 
+def main():
     if "authenticated" not in st.session_state:
         st.session_state["authenticated"] = False
 
     if st.session_state["authenticated"]:
-        scrape_page(supabase=supabase)
+        scrape_page(supabase=supabase_client)
     else:
-        login_page(supabase=supabase)
+        login_page(supabase=supabase_client)
 
-def tarea_periodica():
-    print("Resultado de la tarea periódica")
+def run_report():
+    #extrac_from_db(marketplace="All", supabase=supabase_client())
+    print("Making report...")
+    make_report()
+    
 
 def run_schedule():
     while True:
         schedule.run_pending()
         time.sleep(1)
 
-# Configuración de la tarea periódica
-schedule.every(1).minutes.do(tarea_periodica)
+schedule.every(10).minutes.do(run_report)
 
-# Iniciar un hilo separado para ejecutar las tareas programadas
 thread = threading.Thread(target=run_schedule, daemon=True)
 thread.start()
 

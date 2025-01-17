@@ -44,7 +44,7 @@ def extrac_from_db(marketplace,supabase):
 
         i = 0
         all_products = []
-        if marketplace is 'All':
+        if marketplace == 'All':
             limit = 1000 # default limit for supabase requests
             offset = 0
             file_name = "todas_marketplaces"
