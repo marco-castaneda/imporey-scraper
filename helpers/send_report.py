@@ -3,7 +3,6 @@ from sendgrid import SendGridAPIClient # type: ignore
 
 
 def make_report():
-    try:
         sendgrid_client = SendGridAPIClient(api_key=os.getenv("SENDGRID_API_KEY"))
         data = {
             "from": {"email": "marco.castaneda@kiranalabs.mx"},
@@ -25,6 +24,4 @@ def make_report():
         print("Report finished")
         print("response")
         print(response)
-    except Exception as e:
-        print("An error")
-        print(e)
+
