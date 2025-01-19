@@ -21,6 +21,7 @@ def make_report():
 
         response = sendgrid_client.client.mail.send.post(request_body=data)
 
+        print("Report finished 2")
         print("Report finished")
         print("response")
         print(response)
