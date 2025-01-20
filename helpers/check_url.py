@@ -1,5 +1,4 @@
 
-
 def check_url(url):
     if 'https' in url:
         return url
