@@ -11,7 +11,7 @@ def make_report(supabase):
 
         current_date = datetime.now().strftime("%Y-%m-%d")
         
-        data = {
+        dataEmail = {
             "from": {"email": "marcelo@kiranalabs.mx"},
             "personalizations": [
                 {
@@ -34,7 +34,7 @@ def make_report(supabase):
             ]
         }
         print("Sending email...")
-        response = sendgrid_client.client.mail.send.post(request_body=data)
+        response = sendgrid_client.client.mail.send.post(request_body=dataEmail)
         
         if 200 <= response.status_code < 300:
             print("Correo enviado exitosamente.")
