@@ -5,7 +5,6 @@ from supabase import create_client, Client
 from data import extrac_from_db
 
 def make_report():
-    try:
         SUPABASE_URL = os.getenv("SUPABASE_URL")
         SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
@@ -30,14 +29,7 @@ def make_report():
                 }
             ],
             "template_id": "d-c17ab97bebf04d08a6d0a5ff2f30e98b",
-            "attachments": [
-                {
-                    "content": encoded_file,  
-                    "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    "filename": f"resultados_{current_date}.xlsx",
-                    "disposition": "attachment"
-                }
-            ]
+       
         }
         print("Sending email...")
         response = sendgrid_client.client.mail.send.post(request_body=dataEmail)
@@ -49,7 +41,5 @@ def make_report():
             print("Error al enviar el correo.")
             print(f"Estado: {response.status_code}, Detalles: {response.body.decode()}")
     
-    except Exception as e:
-        print("Ocurrió un error al intentar enviar el correo:")
-        print(str(e))
+
 
