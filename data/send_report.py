@@ -1,12 +1,17 @@
 import os
 from sendgrid import SendGridAPIClient # type: ignore
 from datetime import datetime
-
+from supabase import create_client, Client
 from data import extrac_from_db
 
-def make_report(supabase):
+def make_report():
     try:
-        
+        SUPABASE_URL = os.getenv("SUPABASE_URL")
+        SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+        if SUPABASE_URL is not None and SUPABASE_KEY is not None:
+            supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
         encoded_file = extrac_from_db(marketplace="HomeDepot", supabase=supabase, isSendingByEmail=True)
         sendgrid_client = SendGridAPIClient(api_key=os.getenv("SENDGRID_API_KEY"))
 

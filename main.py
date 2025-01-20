@@ -28,7 +28,7 @@ def main():
 
 def run_report():
     print("Making report...")
-    make_report(supabase=supabase_client())
+    make_report()
     
 
 """ def run_schedule():
