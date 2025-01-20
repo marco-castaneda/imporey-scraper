@@ -13,7 +13,7 @@ def make_report(supabase):
         current_date = datetime.now().strftime("%Y-%m-%d")
         
         dataEmail = {
-            "from": {"email": "rodrigo@kiranalabs.mx"},
+            "from": {"email": "marcelo@kiranalabs.mx"},
             "personalizations": [
                 {
                     "to": [
