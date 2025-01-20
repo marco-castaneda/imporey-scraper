@@ -24,7 +24,7 @@ def make_report(supabase):
                     },
                 }
             ],
-            "template_id": "d-a748551b6cb24b70b4b76cd0bcbed86b",
+            "template_id": "d-c17ab97bebf04d08a6d0a5ff2f30e98b",
             "attachments": [
                 {
                     "content": encoded_file,  
