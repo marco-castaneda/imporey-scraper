@@ -22,6 +22,7 @@ def make_report():
                 {
                     "to": [
                         {"email": "marco.castaneda@kiranalabs.mx"},
+                        {"email": "marcelo@kiranalabs.mx"},
                     ],
                     "dynamic_template_data": {
                         "title": "Test imporey scrapper with file",

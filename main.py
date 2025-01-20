@@ -33,7 +33,7 @@ def run_report():
     make_report()
     
 
-def run_schedule():
+""" def run_schedule():
     while True:
         schedule.run_pending()
         time.sleep(1)
@@ -41,7 +41,7 @@ def run_schedule():
 schedule.every(10).minutes.do(run_report)
 
 thread = threading.Thread(target=run_schedule, daemon=True)
-thread.start()
+thread.start() """
 
 if __name__ == "__main__":
     main()
