@@ -2,7 +2,7 @@ import os
 from sendgrid import SendGridAPIClient # type: ignore
 from datetime import datetime
 
-from data.data import extrac_from_db 
+from data import extrac_from_db
 
 def make_report(supabase):
     try:

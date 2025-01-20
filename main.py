@@ -2,7 +2,7 @@ import streamlit as st  # type: ignore
 from screens import login_page, scrape_page
 from supabase import create_client, Client
 import os
-from helpers import make_report  # type: ignore
+from data import make_report  # type: ignore
 
 
 def supabase_client():
