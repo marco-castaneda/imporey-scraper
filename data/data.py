@@ -11,19 +11,25 @@ from scrappers import (
     check_home_depot,
     check_coppel
 )
+from base64 import b64encode
 
-def dowload_results_file(file_name,result_wb):
+def dowload_results_file(file_name,result_wb,isSendingByEmail):
     with NamedTemporaryFile() as tmp:
         result_wb.save(tmp.name)
         data = BytesIO(tmp.read())
 
-    st.subheader("Resultados")
-    st.download_button("Descargar Archivo",
-                        data=data,
-                        mime='xlsx',
-                        file_name=f"resultados_{file_name}.xlsx")
+    if isSendingByEmail:
+        file_data = tmp.read()
+        encoded_file = b64encode(file_data).decode()
+        return encoded_file
+    else:
+        st.subheader("Resultados")
+        st.download_button("Descargar Archivo",
+                            data=data,
+                            mime='xlsx',
+                            file_name=f"resultados_{file_name}.xlsx")
 
-def extrac_from_db(marketplace,supabase):
+def extrac_from_db(marketplace,supabase,isSendingByEmail):
     try:
 
         st.info(f"Processing data from {marketplace}...")
@@ -124,8 +130,10 @@ def extrac_from_db(marketplace,supabase):
                     e_column.fill = PatternFill(start_color='808080',
                                                 end_color='808080',
                                                 fill_type='solid')
-                    
-            dowload_results_file(file_name=file_name,result_wb=result_wb)
+            if isSendingByEmail:
+                return dowload_results_file(file_name=file_name,result_wb=result_wb,isSendingByEmail=isSendingByEmail)
+            else:        
+                dowload_results_file(file_name=file_name,result_wb=result_wb,isSendingByEmail=isSendingByEmail)
 
         else:
             st.warning(f"No data in table {marketplace}.")

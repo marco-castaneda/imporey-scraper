@@ -34,7 +34,7 @@ def main():
 def run_report():
     #extrac_from_db(marketplace="All", supabase=supabase_client())
     print("Making report...")
-    make_report()
+    make_report(supabase=supabase_client)
     
 
 """ def run_schedule():

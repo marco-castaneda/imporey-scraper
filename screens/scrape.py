@@ -25,25 +25,25 @@ def scrape_page(supabase):
     col1, col2, col3 = st.columns(3)
     col21, col22, col23 = st.columns(3)
     if column1[0].button("Descargar todas las marketplaces"):
-        extrac_from_db(marketplace="All", supabase=supabase)
+        extrac_from_db(marketplace="All", supabase=supabase,isSendingByEmail=False)
 
     if col1.button("Amazon"):
-        extrac_from_db(marketplace="Amazon", supabase=supabase)
+        extrac_from_db(marketplace="Amazon", supabase=supabase, isSendingByEmail=False)
 
     if col2.button("Mercado Libre"):
-        extrac_from_db(marketplace="MercadoLibre", supabase=supabase)
+        extrac_from_db(marketplace="MercadoLibre", supabase=supabase, isSendingByEmail=False)
 
     if col3.button("Liverpool"):
-        extrac_from_db(marketplace="Liverpool", supabase=supabase)
+        extrac_from_db(marketplace="Liverpool", supabase=supabase, isSendingByEmail=False)
 
     if col21.button("Walmart"):
-        extrac_from_db(marketplace="Walmart", supabase=supabase)
+        extrac_from_db(marketplace="Walmart", supabase=supabase, isSendingByEmail=False)
 
     if col22.button("Home Depot"):
-        extrac_from_db(marketplace="HomeDepot", supabase=supabase)
+        extrac_from_db(marketplace="HomeDepot", supabase=supabase, isSendingByEmail=False)
 
     if col23.button("Coppel"):
-        extrac_from_db(marketplace="Coppel", supabase=supabase)
+        extrac_from_db(marketplace="Coppel", supabase=supabase, isSendingByEmail=False)
 
 
     st.header("Extrac data from excel file", divider="green")

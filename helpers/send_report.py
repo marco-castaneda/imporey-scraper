@@ -1,10 +1,15 @@
 import os
 from sendgrid import SendGridAPIClient # type: ignore
+from data import extrac_from_db
+from datetime import datetime 
 
-
-def make_report():
+def make_report(supabase):
     try:
+        
+        encoded_file = extrac_from_db(marketplace="HomeDepot", supabase=supabase, isSendingByEmail=True)
         sendgrid_client = SendGridAPIClient(api_key=os.getenv("SENDGRID_API_KEY"))
+
+        current_date = datetime.now().strftime("%Y-%m-%d")
         
         data = {
             "from": {"email": "marcelo@kiranalabs.mx"},
@@ -14,13 +19,21 @@ def make_report():
                         {"email": "marco_pascual410@hotmail.com"},
                     ],
                     "dynamic_template_data": {
-                        "title": "Se creó una nueva solicitud de facturación marketplace por parte de cliente.",
+                        "title": "Test imporey scrapper with file",
                     },
                 }
             ],
-            "template_id": "d-c17ab97bebf04d08a6d0a5ff2f30e98b",
+            "template_id": "d-a748551b6cb24b70b4b76cd0bcbed86b",
+            "attachments": [
+                {
+                    "content": encoded_file,  
+                    "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    "filename": f"resultados_{current_date}.xlsx",
+                    "disposition": "attachment"
+                }
+            ]
         }
-        
+        print("Sending email...")
         response = sendgrid_client.client.mail.send.post(request_body=data)
         
         if 200 <= response.status_code < 300:
