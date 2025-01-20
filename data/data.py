@@ -12,25 +12,34 @@ from scrappers import (
     check_coppel
 )
 from base64 import b64encode
+import os
 
 def dowload_results_file(file_name,result_wb,isSendingByEmail):
-    with NamedTemporaryFile() as tmp:
-        result_wb.save(tmp.name)
+    try:
+        with NamedTemporaryFile(delete=False) as tmp:
+            result_wb.save(tmp.name)
 
-    if isSendingByEmail:
-        tmp.seek(0)
-        file_data = tmp.read()
-        encoded_file = b64encode(file_data).decode()
-        print("encoded_file[:100]")
-        print(encoded_file[:100])
-        return encoded_file
-    else:
-        data = BytesIO(tmp.read())
-        st.subheader("Resultados")
-        st.download_button("Descargar Archivo",
-                            data=data,
-                            mime='xlsx',
-                            file_name=f"resultados_{file_name}.xlsx")
+        if isSendingByEmail:
+            tmp.seek(0)
+            file_data = tmp.read()
+            encoded_file = b64encode(file_data).decode()
+            print("encoded_file[:100]")
+            print(encoded_file[:100])
+            return encoded_file
+        else:
+            data = BytesIO(tmp.read())
+            st.subheader("Resultados")
+            st.download_button("Descargar Archivo",
+                                data=data,
+                                mime='xlsx',
+                                file_name=f"resultados_{file_name}.xlsx")
+    
+    except Exception as e:
+        print(f"Error al generar o leer el archivo: {str(e)}")
+        return None
+    finally:
+        if not isSendingByEmail or os.path.exists(tmp.name):
+            os.remove(tmp.name)
 
 def extrac_from_db(marketplace,supabase,isSendingByEmail):
     try:
