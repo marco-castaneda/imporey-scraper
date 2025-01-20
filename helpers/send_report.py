@@ -7,7 +7,7 @@ def make_report():
         sendgrid_client = SendGridAPIClient(api_key=os.getenv("SENDGRID_API_KEY"))
         
         data = {
-            "from": {"email": "marco.castaneda@kiranalabs.mx"},
+            "from": {"email": "marcelo@kiranalabs.mx"},
             "personalizations": [
                 {
                     "to": [
