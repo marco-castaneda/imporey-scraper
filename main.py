@@ -3,7 +3,9 @@ from screens import login_page, scrape_page
 from supabase import create_client, Client
 import os
 from data import make_report  # type: ignore
-
+import schedule
+import time
+import threading
 
 def supabase_client():
     SUPABASE_URL = os.getenv("SUPABASE_URL")
@@ -31,7 +33,7 @@ def run_report():
     make_report()
     
 
-""" def run_schedule():
+def run_schedule():
     while True:
         schedule.run_pending()
         time.sleep(1)
@@ -39,7 +41,7 @@ def run_report():
 schedule.every(10).minutes.do(run_report)
 
 thread = threading.Thread(target=run_schedule, daemon=True)
-thread.start() """
+thread.start()
 
 if __name__ == "__main__":
     main()

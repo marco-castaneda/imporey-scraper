@@ -21,19 +21,19 @@ def make_report():
             "personalizations": [
                 {
                     "to": [
-                        {"email": "marco_pascual410@hotmail.com"},
+                        {"email": "marco.castaneda@kiranalabs.mx"},
                     ],
                     "dynamic_template_data": {
                         "title": "Test imporey scrapper with file",
                     },
                 }
             ],
-            "template_id": "d-c17ab97bebf04d08a6d0a5ff2f30e98b",
+            "template_id": "d-8f9fb5969dd64cc1bc52fd0a2071d89d",
             "attachments": [
                 {
                     "content": encoded_file,  
                     "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    "filename": f"resultados_{current_date}.xlsx",
+                    "filename": f"results_{current_date}.xlsx",
                     "disposition": "attachment"
                 }
             ]
@@ -42,11 +42,10 @@ def make_report():
         response = sendgrid_client.client.mail.send.post(request_body=dataEmail)
         
         if 200 <= response.status_code < 300:
-            print("Correo enviado exitosamente.")
-            print(f"Estado: {response.status_code}, Detalles: {response.body.decode()}")
+            print("Email send successfully")
         else:
-            print("Error al enviar el correo.")
-            print(f"Estado: {response.status_code}, Detalles: {response.body.decode()}")
+            print("Error when send email.")
+            print(f"Status: {response.status_code}, Details: {response.body.decode()}")
     
 
 
