@@ -10,12 +10,14 @@ def login_page(supabase):
     password = st.text_input("Contraseña", type="password")
 
     if st.button("Iniciar Sesión"):
+        try:
             user = supabase.auth.sign_in_with_password({"email": email, "password": password})
             if user:
                 st.success("Inicio de sesión exitoso")
                 st.session_state["authenticated"] = True
                 st.rerun()
-       
+        except Exception as e:
+            st.error(f"Error de autenticación: {str(e)}")
 
 
 def logout(supabase):
