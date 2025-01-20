@@ -2,10 +2,6 @@ import streamlit as st  # type: ignore
 from screens import login_page, scrape_page
 from supabase import create_client, Client
 import os
-import schedule  # type: ignore
-import threading
-import time
-from data import extrac_from_db, dowload_results_file
 from helpers import make_report  # type: ignore
 
 
@@ -32,7 +28,6 @@ def main():
         run_report()
 
 def run_report():
-    #extrac_from_db(marketplace="All", supabase=supabase_client())
     print("Making report...")
     make_report(supabase=supabase_client)
     
