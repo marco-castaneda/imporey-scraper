@@ -1,7 +1,8 @@
 import os
 from sendgrid import SendGridAPIClient # type: ignore
-from data import extrac_from_db
-from datetime import datetime 
+from datetime import datetime
+
+from data.data import extrac_from_db 
 
 def make_report(supabase):
     try:
@@ -12,7 +13,7 @@ def make_report(supabase):
         current_date = datetime.now().strftime("%Y-%m-%d")
         
         dataEmail = {
-            "from": {"email": "marcelo@kiranalabs.mx"},
+            "from": {"email": "rodrigo@kiranalabs.mx"},
             "personalizations": [
                 {
                     "to": [
