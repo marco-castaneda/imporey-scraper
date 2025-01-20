@@ -12,16 +12,15 @@ def supabase_client():
     if SUPABASE_URL is not None and SUPABASE_KEY is not None:
         supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
         return supabase
-    return None
 
 def main():
     if "authenticated" not in st.session_state:
         st.session_state["authenticated"] = False
 
     if st.session_state["authenticated"]:
-        scrape_page(supabase=supabase_client)
+        scrape_page(supabase=supabase_client())
     else:
-        login_page(supabase=supabase_client)
+        login_page(supabase=supabase_client())
 
     
     if st.button("Make report"):
@@ -29,7 +28,7 @@ def main():
 
 def run_report():
     print("Making report...")
-    make_report(supabase=supabase_client)
+    make_report(supabase=supabase_client())
     
 
 """ def run_schedule():
