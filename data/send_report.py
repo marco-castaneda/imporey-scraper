@@ -29,7 +29,14 @@ def make_report():
                 }
             ],
             "template_id": "d-c17ab97bebf04d08a6d0a5ff2f30e98b",
-       
+            "attachments": [
+                {
+                    "content": encoded_file,  
+                    "type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    "filename": f"resultados_{current_date}.xlsx",
+                    "disposition": "attachment"
+                }
+            ]
         }
         print("Sending email...")
         response = sendgrid_client.client.mail.send.post(request_body=dataEmail)

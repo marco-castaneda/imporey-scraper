@@ -16,13 +16,16 @@ from base64 import b64encode
 def dowload_results_file(file_name,result_wb,isSendingByEmail):
     with NamedTemporaryFile() as tmp:
         result_wb.save(tmp.name)
-        data = BytesIO(tmp.read())
 
     if isSendingByEmail:
+        tmp.seek(0)
         file_data = tmp.read()
         encoded_file = b64encode(file_data).decode()
+        print("encoded_file[:100]")
+        print(encoded_file[:100])
         return encoded_file
     else:
+        data = BytesIO(tmp.read())
         st.subheader("Resultados")
         st.download_button("Descargar Archivo",
                             data=data,
