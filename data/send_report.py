@@ -5,6 +5,7 @@ from supabase import create_client, Client
 from data import extrac_from_db
 
 def make_report():
+    try:
         SUPABASE_URL = os.getenv("SUPABASE_URL")
         SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
@@ -48,6 +49,7 @@ def make_report():
         else:
             print("Error when send email.")
             print(f"Status: {response.status_code}, Details: {response.body.decode()}")
-    
+    except Exception as e:
+        print(f"Error when making report: {str(e)}")
 
 

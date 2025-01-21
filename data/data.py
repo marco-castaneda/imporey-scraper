@@ -43,8 +43,8 @@ def dowload_results_file(file_name,result_wb,isSendingByEmail):
 
 def extrac_from_db(marketplace,supabase,isSendingByEmail):
     try:
-
-        st.info(f"Processing data from {marketplace}...")
+        if not isSendingByEmail:
+            st.info(f"Processing data from {marketplace}...")
 
         result_wb = openpyxl.Workbook()
         result_ws = result_wb.active
@@ -66,7 +66,6 @@ def extrac_from_db(marketplace,supabase,isSendingByEmail):
             limit = 1000 # default limit for supabase requests
             offset = 0
             file_name = "todas_marketplaces"
-            #resp = supabase.table("Products").select("*").eq("active",1).execute()
 
             while True:
                 resp = supabase.table("Products").select("*").eq("active", 1).range(offset, offset + limit - 1).execute()
@@ -78,8 +77,8 @@ def extrac_from_db(marketplace,supabase,isSendingByEmail):
         else:
             resp = supabase.table("Products").select("*").eq("marketplace",marketplace).eq("active",1).execute()
             all_products.extend(resp.data)
-
-        prg = st.progress(0)
+        if not isSendingByEmail:
+            prg = st.progress(0)
         
         if resp.data:
             total = len(all_products)
@@ -123,10 +122,11 @@ def extrac_from_db(marketplace,supabase,isSendingByEmail):
                     cell = result_ws.cell(row=result_row_num, column=col_num)# type: ignore
                     cell.value = cell_value
                 i += 1
-                prg.progress(i / total,text=f"Procesando {i} producto(s) de {total}.")
-
-            st.write("Terminando de procesar los datos...")
-            st.write("Se procesaron ", i, " productos.")
+                if not isSendingByEmail:
+                    prg.progress(i / total,text=f"Procesando {i} producto(s) de {total}.")
+            if not isSendingByEmail:
+                st.write("Terminando de procesar los datos...")
+                st.write("Se procesaron ", i, " productos.")
             for e_column in result_ws['E']:# type: ignore
                 if e_column.value == "ACTIVO":
                     e_column.fill = PatternFill(start_color='38B856',
@@ -148,11 +148,13 @@ def extrac_from_db(marketplace,supabase,isSendingByEmail):
                 dowload_results_file(file_name=file_name,result_wb=result_wb,isSendingByEmail=isSendingByEmail)
 
         else:
-            st.warning(f"No data in table {marketplace}.")
+            if not isSendingByEmail:
+                st.warning(f"No data in table {marketplace}.")
     except Exception as e:
-        st.error(f"Error to obtain products of {marketplace}: {e}")
-        if st.button("Reiniciar proceso",type="secondary"):
-            st.rerun()
+        if not isSendingByEmail:
+            st.error(f"Error to obtain products of {marketplace}: {e}")
+            if st.button("Reiniciar proceso",type="secondary"):
+                st.rerun()
 
         return []
     

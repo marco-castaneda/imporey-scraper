@@ -35,17 +35,17 @@ def run_report():
     make_report()
     
 local_tz = pytz.timezone("America/Monterrey")
-
+hour = "12:55"
 def run_schedule():
     while True:
         now = datetime.now(local_tz).strftime("%H:%M")
         print("now")
         print(now)
-        if now == "12:30":
+        if now == hour:
             run_report()
         time.sleep(60)
 
-schedule.every().day.at("12:30").do(run_report)
+schedule.every().day.at(hour).do(run_report)
 
 thread = threading.Thread(target=run_schedule, daemon=True)
 thread.start()
