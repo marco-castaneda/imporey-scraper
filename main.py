@@ -32,7 +32,7 @@ def main():
 
 def run_report():
     print("Making report...")
-    make_report()
+    #make_report()
     
 local_tz = pytz.timezone("America/Monterrey")
 hour = "13:10"
@@ -45,7 +45,8 @@ def run_schedule():
             run_report()
         time.sleep(60)
 
-schedule.every().day.at(hour).do(run_report)
+#schedule.every().day.at(hour).do(run_report)
+schedule.every(10).minutes.do(run_report)
 
 thread = threading.Thread(target=run_schedule, daemon=True)
 thread.start()
