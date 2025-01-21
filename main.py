@@ -8,6 +8,7 @@ import time
 import threading
 import pytz
 from datetime import datetime
+import argparse
 
 def supabase_client():
     SUPABASE_URL = os.getenv("SUPABASE_URL")
@@ -34,22 +35,17 @@ def run_report():
     print("Making report...")
     #make_report()
     
-local_tz = pytz.timezone("America/Monterrey")
-hour = "13:10"
-def run_schedule():
-    while True:
-        now = datetime.now(local_tz).strftime("%H:%M")
-        print("now")
-        print(now)
-        if now == hour:
-            run_report()
-        time.sleep(60)
-
-#schedule.every().day.at(hour).do(run_report)
-schedule.every(10).minutes.do(run_report)
-
-thread = threading.Thread(target=run_schedule, daemon=True)
-thread.start()
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="Run specific commands")
+    parser.add_argument("--run-report", action="store_true", help="Run the report function manually")
+    args = parser.parse_args()
+
+    if args.run_report:
+        #Execute the report function manually
+        print(run_report())
+    else:
+        # Initialize the Streamlit instance if no command pass
+        main()
+
+

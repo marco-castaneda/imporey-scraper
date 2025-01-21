@@ -15,7 +15,7 @@ source venv/bin/activate
 2. Install streamlit
 
 ```sh
-pip install streamlit bs4 openpyxl schedule firecrawl-py supabase sendgrid pytz
+pip install -r requirements.txt
 ```
 
 3. Run
