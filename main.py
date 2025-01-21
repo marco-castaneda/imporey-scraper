@@ -6,6 +6,8 @@ from data import make_report  # type: ignore
 import schedule
 import time
 import threading
+import pytz
+from datetime import datetime
 
 def supabase_client():
     SUPABASE_URL = os.getenv("SUPABASE_URL")
@@ -32,13 +34,18 @@ def run_report():
     print("Making report...")
     make_report()
     
+local_tz = pytz.timezone("America/Monterrey")
 
 def run_schedule():
     while True:
-        schedule.run_pending()
-        time.sleep(1)
+        now = datetime.now(local_tz).strftime("%H:%M")
+        print("now")
+        print(now)
+        if now == "12:30":
+            run_report()
+        time.sleep(60)
 
-schedule.every().day.at("11:30").do(run_report)
+schedule.every().day.at("12:30").do(run_report)
 
 thread = threading.Thread(target=run_schedule, daemon=True)
 thread.start()

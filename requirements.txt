@@ -8,3 +8,4 @@ pydantic
 supabase
 schedule
 sendgrid
+pytz
