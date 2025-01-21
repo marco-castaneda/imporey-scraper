@@ -33,7 +33,7 @@ def main():
 
 def run_report():
     print("Making report...")
-    #make_report()
+    make_report()
     
 
 if __name__ == "__main__":
