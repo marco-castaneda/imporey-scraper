@@ -38,7 +38,8 @@ def run_schedule():
         schedule.run_pending()
         time.sleep(1)
 
-schedule.every().day.at("08:00").do(run_report)
+#schedule.every().day.at("08:00").do(run_report)
+schedule.every(10).minutes.do(run_report)
 
 thread = threading.Thread(target=run_schedule, daemon=True)
 thread.start()
