@@ -4,6 +4,9 @@ beautifulsoup4
 openpyxl
 python-dotenv
 requests
-python-dotenv
 pydantic
 supabase
+schedule
+sendgrid
+pytz
+argparse

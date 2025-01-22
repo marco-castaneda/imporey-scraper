@@ -2,9 +2,6 @@ import os
 import streamlit as st # type: ignore
 
 
-
-
-
 def login_page(supabase):
     st.title("Inicio de Sesión")
     st.write("Por favor, inicia sesión para continuar.")
