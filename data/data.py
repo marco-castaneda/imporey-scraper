@@ -124,6 +124,8 @@ def extrac_from_db(marketplace,supabase,isSendingByEmail):
                 i += 1
                 if not isSendingByEmail:
                     prg.progress(i / total,text=f"Procesando {i} producto(s) de {total}.")
+                else:
+                    print(f"Procesando {i} producto(s) de {total}.")
             if not isSendingByEmail:
                 st.write("Terminando de procesar los datos...")
                 st.write("Se procesaron ", i, " productos.")

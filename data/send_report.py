@@ -11,8 +11,10 @@ def make_report():
 
         if SUPABASE_URL is not None and SUPABASE_KEY is not None:
             supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-
+        print("Scrapping data...")
         encoded_file = extrac_from_db(marketplace="All", supabase=supabase, isSendingByEmail=True)
+        
+        print("Building email...")
         sendgrid_client = SendGridAPIClient(api_key=os.getenv("SENDGRID_API_KEY"))
 
         current_date = datetime.now().strftime("%Y-%m-%d")
