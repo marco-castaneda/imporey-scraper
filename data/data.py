@@ -11,22 +11,40 @@ from scrappers import (
     check_home_depot,
     check_coppel
 )
+from base64 import b64encode
+import os
 
-def dowload_results_file(file_name,result_wb):
-    with NamedTemporaryFile() as tmp:
-        result_wb.save(tmp.name)
-        data = BytesIO(tmp.read())
-
-    st.subheader("Resultados")
-    st.download_button("Descargar Archivo",
-                        data=data,
-                        mime='xlsx',
-                        file_name=f"resultados_{file_name}.xlsx")
-
-def extrac_from_db(marketplace,supabase):
+def dowload_results_file(file_name,result_wb,isSendingByEmail):
     try:
+        with NamedTemporaryFile(delete=False) as tmp:
+            result_wb.save(tmp.name)
 
-        st.info(f"Processing data from {marketplace}...")
+            if isSendingByEmail:
+                tmp.seek(0)
+                file_data = tmp.read()
+                encoded_file = b64encode(file_data).decode()
+                print("encoded_file[:100]")
+                print(encoded_file[:100])
+                return encoded_file
+            else:
+                data = BytesIO(tmp.read())
+                st.subheader("Resultados")
+                st.download_button("Descargar Archivo",
+                                    data=data,
+                                    mime='xlsx',
+                                    file_name=f"resultados_{file_name}.xlsx")
+    
+    except Exception as e:
+        print(f"Error al generar o leer el archivo: {str(e)}")
+        return None
+    finally:
+        if isSendingByEmail or os.path.exists(tmp.name):
+            os.remove(tmp.name)
+
+def extrac_from_db(marketplace,supabase,isSendingByEmail):
+    try:
+        if not isSendingByEmail:
+            st.info(f"Processing data from {marketplace}...")
 
         result_wb = openpyxl.Workbook()
         result_ws = result_wb.active
@@ -44,11 +62,10 @@ def extrac_from_db(marketplace,supabase):
 
         i = 0
         all_products = []
-        if marketplace is 'All':
+        if marketplace == 'All':
             limit = 1000 # default limit for supabase requests
             offset = 0
             file_name = "todas_marketplaces"
-            #resp = supabase.table("Products").select("*").eq("active",1).execute()
 
             while True:
                 resp = supabase.table("Products").select("*").eq("active", 1).range(offset, offset + limit - 1).execute()
@@ -60,8 +77,8 @@ def extrac_from_db(marketplace,supabase):
         else:
             resp = supabase.table("Products").select("*").eq("marketplace",marketplace).eq("active",1).execute()
             all_products.extend(resp.data)
-
-        prg = st.progress(0)
+        if not isSendingByEmail:
+            prg = st.progress(0)
         
         if resp.data:
             total = len(all_products)
@@ -105,10 +122,13 @@ def extrac_from_db(marketplace,supabase):
                     cell = result_ws.cell(row=result_row_num, column=col_num)# type: ignore
                     cell.value = cell_value
                 i += 1
-                prg.progress(i / total,text=f"Procesando {i} producto(s) de {total}.")
-
-            st.write("Terminando de procesar los datos...")
-            st.write("Se procesaron ", i, " productos.")
+                if not isSendingByEmail:
+                    prg.progress(i / total,text=f"Procesando {i} producto(s) de {total}.")
+                else:
+                    print(f"Procesando {i} producto(s) de {total}.")
+            if not isSendingByEmail:
+                st.write("Terminando de procesar los datos...")
+                st.write("Se procesaron ", i, " productos.")
             for e_column in result_ws['E']:# type: ignore
                 if e_column.value == "ACTIVO":
                     e_column.fill = PatternFill(start_color='38B856',
@@ -124,15 +144,19 @@ def extrac_from_db(marketplace,supabase):
                     e_column.fill = PatternFill(start_color='808080',
                                                 end_color='808080',
                                                 fill_type='solid')
-                    
-            dowload_results_file(file_name=file_name,result_wb=result_wb)
+            if isSendingByEmail:
+                return dowload_results_file(file_name=file_name,result_wb=result_wb,isSendingByEmail=isSendingByEmail)
+            else:        
+                dowload_results_file(file_name=file_name,result_wb=result_wb,isSendingByEmail=isSendingByEmail)
 
         else:
-            st.warning(f"No data in table {marketplace}.")
+            if not isSendingByEmail:
+                st.warning(f"No data in table {marketplace}.")
     except Exception as e:
-        st.error(f"Error to obtain products of {marketplace}: {e}")
-        if st.button("Reiniciar proceso",type="secondary"):
-            st.rerun()
+        if not isSendingByEmail:
+            st.error(f"Error to obtain products of {marketplace}: {e}")
+            if st.button("Reiniciar proceso",type="secondary"):
+                st.rerun()
 
         return []
     
